@@ -1,12 +1,19 @@
+use std::net::TcpListener;
+
 #[tokio::test]
 
 async fn health_check_works() {
     // launch the server as a background task
-    spawn_app();
+    let listner = TcpListener::bind("127.0.0.1:0")
+        .expect("Failed to bind a random port");
+    let port = listner.local_addr().unwrap().port();
+    let ip = listner.local_addr().unwrap().ip();
+
+    spawn_app(listner);
 
     let client = reqwest::Client::new();
-
-    let response = client.get("http://127.0.0.1:8030/ping")
+    let url = format!("http://{}:{}/ping", ip, port);
+    let response = client.get(url)
         .send()
         .await
         .expect("Failed to execute request");
@@ -19,7 +26,7 @@ async fn health_check_works() {
 /**
  * spawn the server as a background service with tokio::spawn()
  */
-fn spawn_app() {
-    let server = backend::web_app::run().expect("Failed to spawn our app");
+fn spawn_app(listener:TcpListener) {
+    let server = backend::web_app::run(listener).expect("Failed to spawn our app");
     let _ = tokio::spawn(server);
 }

@@ -1,11 +1,13 @@
+use std::net::TcpListener;
 use actix_web::{web, get, App, HttpRequest, HttpServer, Responder, HttpResponse};
 use actix_web::dev::Server;
 
-pub fn run() -> Result<Server, std::io::Error> {
+pub fn run(listener: TcpListener) -> Result<Server, std::io::Error> {
+    println!("host {}, port {}", listener.local_addr().unwrap().ip(), listener.local_addr().unwrap().port());
     let server = HttpServer::new(|| {
             App::new().service(pong)
         })
-        .bind("127.0.0.1:8030")?
+        .listen(listener)?
         .run();
 
     Ok(server)
