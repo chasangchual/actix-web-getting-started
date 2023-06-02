@@ -1,16 +1,8 @@
-use actix_web::{web, get, App, HttpRequest, HttpServer, Responder, HttpResponse};
-
-#[get("/ping")]
-async fn pong(req: HttpRequest) -> impl Responder {
-    HttpResponse::Ok().body("pong")
-}
+use backend::{database, web_app};
+use actix_web::dev::Server;
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
-    HttpServer::new(|| {
-        App::new().service(pong)
-    })
-    .bind("127.0.0.1:8030")?
-    .run()
-    .await
+    database::init_db().await;
+    web_app::run()?.await
 }
